@@ -7,17 +7,21 @@
 #'
 #' @param obsdata The data frame to be imputed.
 #' @param nBoot The number of bootstrap samples to take. It is recommended
-#' that you use a minimum of 200.
+#' that you use a minimum of 200. If you specify \code{nCores>1}, \code{nBoot} must
+#' be a multiple of the specified \code{nCores} value.
 #' @param nImp The number of times to impute each bootstrap sample. Two
 #' is recommended.
+#' @param nCores The number of CPU cores to use. If specified greater than one,
+#' bootImpute will impute using the number of cores specified.
+#' @param seed Random number seed.
 #' @param ... Other arguments that are to be passed to \code{smcfcs}.
 #' @return A list of imputed datasets.
 #'
 #' @example data-raw/bootSmcfcsExamples.r
 #'
 #' @export
-bootSmcfcs <- function(obsdata, nBoot=200, nImp=2, ...) {
-  bootImpute(obsdata, smcfcsImpOnce, nBoot=nBoot, nImp=nImp, ...)
+bootSmcfcs <- function(obsdata, nBoot=200, nImp=2, nCores=1, seed=NULL, ...) {
+  bootImpute(obsdata, smcfcsImpOnce, nBoot=nBoot, nImp=nImp, nCores=nCores, seed=seed, ...)
 }
 
 #a function that imputes once using smcfcs with the specified options

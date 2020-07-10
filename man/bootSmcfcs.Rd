@@ -4,16 +4,22 @@
 \alias{bootSmcfcs}
 \title{Bootstrap then impute using smcfcs}
 \usage{
-bootSmcfcs(obsdata, nBoot = 200, nImp = 2, ...)
+bootSmcfcs(obsdata, nBoot = 200, nImp = 2, nCores = 1, seed = NULL, ...)
 }
 \arguments{
 \item{obsdata}{The data frame to be imputed.}
 
 \item{nBoot}{The number of bootstrap samples to take. It is recommended
-that you use a minimum of 200.}
+that you use a minimum of 200. If you specify \code{nCores>1}, \code{nBoot} must
+be a multiple of the specified \code{nCores} value.}
 
 \item{nImp}{The number of times to impute each bootstrap sample. Two
 is recommended.}
+
+\item{nCores}{The number of CPU cores to use. If specified greater than one,
+bootImpute will impute using the number of cores specified.}
+
+\item{seed}{Random number seed.}
 
 \item{...}{Other arguments that are to be passed to \code{smcfcs}.}
 }
@@ -28,11 +34,11 @@ To run this function requires the \code{smcfcs} package to be installed.
 }
 \examples{
 library(smcfcs)
-set.seed(564764)
+
 head(ex_linquad)
 #bootstrap twice and impute each twice
 #in practice you should bootstrap many more times, e.g. at least 200
 imps <- bootSmcfcs(ex_linquad, nBoot=2, nImp=2,
                    smtype="lm", smformula="y~z+x+xsq",
-                   method=c("","","norm","x^2",""))
+                   method=c("","","norm","x^2",""), seed=564764)
 }

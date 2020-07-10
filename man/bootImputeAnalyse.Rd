@@ -4,18 +4,23 @@
 \alias{bootImputeAnalyse}
 \title{Analyse bootstrapped and imputed estimates}
 \usage{
-bootImputeAnalyse(imps, analysisfun, ..., quiet = FALSE)
+bootImputeAnalyse(imps, analysisfun, nCores = 1, quiet = FALSE, ...)
 }
 \arguments{
 \item{imps}{The list of imputed datasets returned by \code{\link{bootImpute}}}
 
 \item{analysisfun}{A function which when applied to a single dataset returns
-the estimate of the parameter(s) of interest.}
+the estimate of the parameter(s) of interest. The dataset to be analysed
+is passed to \code{analysisfun} as its first argument.}
 
-\item{...}{Other parameters that are to be passed through to \code{analysisfun}.}
+\item{nCores}{The number of CPU cores to use. If specified greater than one,
+\code{bootImputeAnalyse} will impute using the number of cores specified. The
+number of bootstrap samples in \code{imps} should be divisible by \code{nCores}.}
 
 \item{quiet}{Specify whether to print a table of estimates, confidence intervals
 and p-values.}
+
+\item{...}{Other parameters that are to be passed through to \code{analysisfun}.}
 }
 \value{
 A vector containing the point estimate(s), variance estimates, and
@@ -24,7 +29,11 @@ degrees of freedom.
 \description{
 Applies the user specified analysis function to each imputed dataset contained
 in \code{imps}, then calculates estimates, confidence intervals and p-values
-for each parameter, as proposed by von Hippel (2018).
+for each parameter, as proposed by von Hippel and Bartlett (2019).
+}
+\details{
+Multiple cores can be used by using the \code{nCores} argument, which may be
+useful for reducing computation times.
 }
 \examples{
 library(mice)
@@ -43,7 +52,7 @@ analyseImp <- function(inputData) {
 ests <- bootImputeAnalyse(imps, analyseImp)
 }
 \references{
-von Hippel PT. Maximum likelihood multiple imputation: faster,
-more efficient imputation without posterior draws. arXiv, 2018, 1210.0870v9
- \url{https://arxiv.org/pdf/1210.0870v9.pdf}
+von Hippel PT, Bartlett JW. Maximum likelihood multiple imputation: faster,
+more efficient imputation without posterior draws. arXiv, 2019, 1210.0870v10
+ \url{https://arxiv.org/pdf/1210.0870v10.pdf}
 }
