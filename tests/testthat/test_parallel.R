@@ -1,6 +1,6 @@
 context("parallel bootImpute testing")
 
-test_that("Test bootImpute using multiple cores", {
+test_that("Test bootImputeAnalyse using multiple cores", {
   expect_equal({
     set.seed(1234)
 
@@ -10,14 +10,17 @@ test_that("Test bootImpute using multiple cores", {
     y[1:50] <- NA
     simData <- data.frame(x,y)
 
-    myimp <- function(inputData) {
+    myimp <- function(inputData, M) {
       mod <- lm(y~x, data=inputData)
-      imp <- inputData
-      imp$y[is.na(inputData$y)] <- coef(mod)[1]+coef(mod)[2]*inputData$x[is.na(inputData$y)]+rnorm(sum(is.na(inputData$y)))
-      imp
+      imps <- vector("list", M)
+      for (i in 1:M) {
+        imps[[i]] <- inputData
+        imps[[i]]$y[is.na(inputData$y)] <- coef(mod)[1]+coef(mod)[2]*inputData$x[is.na(inputData$y)]+rnorm(sum(is.na(inputData$y)))
+      }
+      imps
     }
 
-    result <- bootImpute(simData, myimp, nBoot=200, nImp=2, nCores=2, seed=123)
+    result <- bootImpute(simData, myimp, nBoot=200, nImp=2, M=2)
 
     myanalysis <- function(data) {
       data$x2 <- data$x^2
@@ -31,8 +34,9 @@ test_that("Test bootImpute using multiple cores", {
   }, TRUE)
 })
 
-test_that("Test bootImpute runs using multiple cores with mice", {
-  expect_error({
+
+test_that("Test bootImpute using multiple cores", {
+  expect_warning({
     set.seed(1234)
 
     n <- 100
@@ -41,12 +45,37 @@ test_that("Test bootImpute runs using multiple cores with mice", {
     y[1:50] <- NA
     simData <- data.frame(x,y)
 
-    result <- bootMice(simData, nBoot=200, nImp=2, nCores=2, seed=123)
-  },NA)
+    myimp <- function(inputData,M) {
+      mod <- lm(y~x, data=inputData)
+      imps <- vector("list", M)
+      for (i in 1:M) {
+        imps[[i]] <- inputData
+        imps[[i]]$y[is.na(inputData$y)] <- coef(mod)[1]+coef(mod)[2]*inputData$x[is.na(inputData$y)]+rnorm(sum(is.na(inputData$y)))
+      }
+      imps
+    }
+
+    result <- bootImpute(simData, myimp, nBoot=20, nImp=2, nCores=2, seed=7234, M=2)
+
+  }, "It is recommended to use at least 200 bootstraps.")
+})
+
+test_that("Test bootImpute runs using multiple cores with mice", {
+  expect_warning({
+    set.seed(1234)
+
+    n <- 100
+    x <- rnorm(n)
+    y <- x+rnorm(n)
+    y[1:50] <- NA
+    simData <- data.frame(x,y)
+
+    result <- bootMice(simData, nBoot=20, nImp=2, nCores=2, seed=123)
+  }, "It is recommended to use at least 200 bootstraps.")
 })
 
 test_that("Test bootImpute runs using multiple cores with mice with extra arguments", {
-  expect_error({
+  expect_warning({
     set.seed(1234)
 
     n <- 100
@@ -55,8 +84,8 @@ test_that("Test bootImpute runs using multiple cores with mice with extra argume
     y[1:50] <- NA
     simData <- data.frame(x,y)
 
-    result <- bootMice(simData, nBoot=200, nImp=2, nCores=2, seed=123, maxit=1)
-  }, NA)
+    result <- bootMice(simData, nBoot=20, nImp=2, nCores=2, seed=123, maxit=1)
+  }, "It is recommended to use at least 200 bootstraps.")
 })
 
 
@@ -78,7 +107,7 @@ test_that("If you use nCores>1 you must set seed for bootImpute", {
     }
 
     result <- bootImpute(simData, myimp, nBoot=200, nImp=2, nCores=2)
-  })
+  }, "If you specify nCores>1 you must set a seed.")
 })
 
 test_that("Test bootImputeAnalyse using multiple cores and additional analysisfun arguments", {
@@ -91,14 +120,17 @@ test_that("Test bootImputeAnalyse using multiple cores and additional analysisfu
     y[1:50] <- NA
     simData <- data.frame(x,y)
 
-    myimp <- function(inputData) {
+    myimp <- function(inputData,M) {
       mod <- lm(y~x, data=inputData)
-      imp <- inputData
-      imp$y[is.na(inputData$y)] <- coef(mod)[1]+coef(mod)[2]*inputData$x[is.na(inputData$y)]+rnorm(sum(is.na(inputData$y)))
-      imp
+      imps <- vector("list", M)
+      for (i in 1:M) {
+        imps[[i]] <- inputData
+        imps[[i]]$y[is.na(inputData$y)] <- coef(mod)[1]+coef(mod)[2]*inputData$x[is.na(inputData$y)]+rnorm(sum(is.na(inputData$y)))
+      }
+      imps
     }
 
-    result <- bootImpute(simData, myimp, nBoot=10, nImp=2, nCores=2, seed=123)
+    result <- bootImpute(simData, myimp, nBoot=200, nImp=2, M=2, nCores=2, seed=123)
 
     myanalysis <- function(data) {
       mod <- lm(y~x, data=data)

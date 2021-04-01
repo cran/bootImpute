@@ -5,11 +5,12 @@
 #' be analysed with \code{\link{bootImputeAnalyse}}.
 #'
 #' The \code{impfun} must be a function which when passed an incomplete datasets
-#' and possibly additional arguments, returns a single imputed data frame. Depending
-#' on what imputation function returns by default, you may need to write a small
-#' wrapper function that calls the imputation procedure once and returns the
-#' imputed dataset. See the Example for an illustration with the \code{mice}
-#' package.
+#' and possibly additional arguments, returns a list of (e.g. 2) imputed datasets.
+#' The number of imputed datasets that \code{impfun} returns should match the value
+#' you specify for the argument \code{nImp}. Depending on what your imputation function
+#' returns by default, you may need to write a small wrapper function that calls
+#' the imputation procedure and returns the list of \code{nImp} datasets.See the
+#' Example for an illustration with the \code{mice} package.
 #'
 #' To improve computation times, \code{bootImpute} now supports
 #' multiple cores through the \code{nCores} argument which uses the \code{parallel}
@@ -17,7 +18,7 @@
 #'
 #' @param obsdata The data frame to be imputed.
 #' @param impfun A function which when passed an incomplete dataset will
-#' return a single imputed data frame.
+#' return a list of imputed data frames.
 #' @param nBoot The number of bootstrap samples to take. It is recommended
 #' that you use a minimum of 200. If you specify \code{nCores>1}, \code{nBoot} must
 #' be a multiple of the specified \code{nCores} value.
@@ -26,7 +27,9 @@
 #' @param nCores The number of CPU cores to use. If specified greater than one,
 #' \code{bootImpute} will impute using the number of cores specified.
 #' @param seed Random number seed.
-#' @param ... Other parameters that are to be passed through to \code{impfun}.
+#' @param ... Other parameters that are to be passed through to \code{impfun},
+#' which will often include the argument that tells \code{impfun} to generate
+#' as many imputations as specified by the value passed to \code{nImp}.
 #' @return A list of imputed datasets.
 #'
 #' @example data-raw/bootImputeExamples.r
@@ -42,6 +45,16 @@ bootImpute <- function(obsdata, impfun, nBoot=200, nImp=2, nCores=1, seed=NULL, 
   n <- dim(obsdata)[1]
   imps <- vector("list", nBoot*nImp)
   count <- 1
+
+  #check impfun returns what we want
+  newImps <- impfun(obsdata, ...)
+  #check newImps is a list of right type and length
+  if (typeof(newImps)!="list") {
+    stop("Your imputation function must return a list of imputed datasets.")
+  }
+  if (length(newImps)!=nImp) {
+    stop("Your imputation function must return the same number of imputed datasets as the value you specify for nImp.")
+  }
 
   #capture extra arguments into an object called args
   args <- list(...)
@@ -64,7 +77,7 @@ bootImpute <- function(obsdata, impfun, nBoot=200, nImp=2, nCores=1, seed=NULL, 
       parallel::clusterExport(cl, c("obsdata", "impfun", "nBootPerCore", "nImp"),
                               envir=environment())
       parImps <- parallel::parLapply(cl, X=1:nCores, fun = function(no){
-        bootImpute(obsdata, impfun, nBoot=nBootPerCore, nImp=nImp, nCores=1)
+        bootImpute::bootImpute(obsdata, impfun, nBoot=nBootPerCore, nImp=nImp, nCores=1)
       })
     } else {
       #some extra arguments to pass to imputation function
@@ -88,8 +101,9 @@ bootImpute <- function(obsdata, impfun, nBoot=200, nImp=2, nCores=1, seed=NULL, 
       #take bootstrap sample
       bsIndices <- sample(1:n, replace=TRUE)
       #impute nImp times
+      newImps <- impfun(obsdata[bsIndices,], ...)
       for (m in 1:nImp) {
-        imps[[count]] <- impfun(obsdata[bsIndices,], ...)
+        imps[[count]] <- newImps[[m]]
         count <- count + 1
       }
     }
