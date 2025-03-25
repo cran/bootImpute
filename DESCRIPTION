@@ -1,18 +1,22 @@
 Package: bootImpute
 Type: Package
 Title: Bootstrap Inference for Multiple Imputation
-Version: 1.2.1
-Author: Jonathan Bartlett
+Version: 1.2.2
+Authors@R: person(given = "Jonathan",
+                    family = "Bartlett",
+                    role = c("aut", "cre"),
+                    email = "jonathan.bartlett1@lshtm.ac.uk")
 Maintainer: Jonathan Bartlett <jonathan.bartlett1@lshtm.ac.uk>
 Description: Bootstraps and imputes incomplete datasets. Then performs inference on estimates obtained from analysing the imputed datasets as proposed by von Hippel and Bartlett (2021) <doi:10.1214/20-STS793>.
 Depends: R (>= 2.10)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Imports: mice, smcfcs
 Suggests: testthat
 NeedsCompilation: no
-Packaged: 2023-06-01 10:07:56 UTC; jwb13
+Packaged: 2025-03-25 12:46:30 UTC; lshjb12
+Author: Jonathan Bartlett [aut, cre]
 Repository: CRAN
-Date/Publication: 2023-06-01 10:30:02 UTC
+Date/Publication: 2025-03-25 17:50:02 UTC
